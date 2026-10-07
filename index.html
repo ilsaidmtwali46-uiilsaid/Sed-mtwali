@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Omni Business Suite - نظام إدارة المبيعات والمخازن</title>
+  
+  <!-- PWA & Theme Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- القائمة الجانبية والشريط العلوي -->
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <h2>Omni Suite</h2>
+        <span class="version-tag">v1.0.0 Pro</span>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#" class="nav-link active" data-target="dashboardView">
+          <i>📊</i> <span>لوحة التحكم</span>
+        </a>
+        <a href="#" class="nav-link" data-target="posView">
+          <i>🛒</i> <span>نقطة البيع (POS)</span>
+        </a>
+        <a href="#" class="nav-link" data-target="inventoryView">
+          <i>📦</i> <span>إدارة المخزن</span>
+        </a>
+        <a href="#" class="nav-link" data-target="cashboxView">
+          <i>💰</i> <span>الخزنة والمالية</span>
+        </a>
+        <a href="#" class="nav-link" data-target="reportsView">
+          <i>📈</i> <span>التقارير الشاملة</span>
+        </a>
+        <a href="#" class="nav-link" data-target="settingsView">
+          <i>⚙️</i> <span>النسخ الاحتياطي</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="themeToggleBtn" class="btn-secondary-sm">🌓 تبديل المظهر</button>
+      </div>
+    </aside>
+
+    <!-- منطقة عرض محتوى الشاشات -->
+    <main class="main-content">
+
+      <!-- 1. شاشة لوحة التحكم (Dashboard) -->
+      <section id="dashboardView" class="view-section active">
+        <header class="page-header">
+          <h1>لوحة التحكم الرئيسية</h1>
+          <p>مخصر سريع للنشاط التجاري اليومي</p>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>مبيعات اليوم</h3>
+            <div id="dashTodaySales" class="stat-value">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>أرباح اليوم التقديرية</h3>
+            <div id="dashTodayProfit" class="stat-value text-success">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>صافي رصيد الخزنة</h3>
+            <div id="dashNetCash" class="stat-value text-primary">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>أصناف أوشكت على النفاد</h3>
+            <div id="dashLowStockCount" class="stat-value text-danger">0</div>
+          </div>
+        </div>
+
+        <div class="content-block margin-top">
+          <h3>آخر العمليات المكتملة</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>رقم الفاتورة</th>
+                <th>التوقيت</th>
+                <th>عدد الأصناف</th>
+                <th>الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody id="recentSalesTableBody">
+              <!-- يتم التحميل آلياً -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 2. شاشة الكاشير والمبيعات (POS) -->
+      <section id="posView" class="view-section" style="display: none;">
+        <div class="pos-container">
+          <!-- القسم الأيمن: الأصناف والبحث -->
+          <div class="pos-products-panel">
+            <div class="search-bar">
+              <input type="text" id="posSearchInput" placeholder="امسح الباركود أو ابحث باسم الصنف (اضغط Enter)..." autofocus>
+              <button id="clearSearchBtn" class="btn-secondary">مسح</button>
+            </div>
+
+            <div id="categoryTabs" class="category-tabs">
+              <!-- التبويبات تتحمل آلياً -->
+            </div>
+
+            <div id="productsGrid" class="products-grid">
+              <!-- كروت الأصناف -->
+            </div>
+          </div>
+
+          <!-- القسم الأيسر: سلة الفاتورة والحساب -->
+          <div class="pos-cart-panel">
+            <h3>الفاتورة الحالية</h3>
+            <div class="cart-table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>الصنف</th>
+                    <th>الكمية</th>
+                    <th>السعر</th>
+                    <th>الإجمالي</th>
+                    <th>حذف</th>
+                  </tr>
+                </thead>
+                <tbody id="cartItemsBody">
+                  <tr><td colspan="5" class="text-center">الفاتورة فارغة</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="cart-summary">
+              <div class="summary-row">
+                <span>إجمالي الأصناف:</span>
+                <strong id="cartTotalItemsCount">0</strong>
+              </div>
+              <div class="summary-row grand-total">
+                <span>المبلغ الإجمالي:</span>
+                <strong id="cartGrandTotal">0.00</strong> ج.م
+              </div>
+
+              <div class="payment-methods">
+                <label><input type="radio" name="payMethod" value="cash" checked> كاش</label>
+                <label><input type="radio" name="payMethod" value="later"> آجل</label>
+              </div>
+
+              <div class="cart-actions">
+                <button id="emptyCartBtn" class="btn-danger">إلغاء [Esc]</button>
+                <button id="checkoutBtn" class="btn-success">إنهاء وطباعة [F2]</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. شاشة إدارة المخزن (Inventory) -->
+      <section id="inventoryView" class="view-section" style="display: none;">
+        <header class="page-header flex-between">
+          <div>
+            <h1>إدارة المخزن والأصناف</h1>
+            <p>التحكم بالمنتجات والكميات المتاحة والأسعار</p>
+          </div>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>إجمالي الأصناف</h3>
+            <div id="invTotalItems" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>قيمة المخزون (شراء)</h3>
+            <div id="invTotalCostValue" class="stat-value">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>قيمة المخزون (بيع)</h3>
+            <div id="invTotalSaleValue" class="stat-value text-success">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>نواقص المخزن</h3>
+            <div id="invLowStockCount" class="stat-value text-warning">0</div>
+          </div>
+        </div>
+
+        <div class="inventory-layout margin-top">
+          <!-- نموذج إضافة / تعديل صنف -->
+          <div class="form-card">
+            <h3 id="productModalTitle">إضافة صنف جديد للمخزن</h3>
+            <form id="productForm">
+              <input type="hidden" id="prodId">
+              
+              <div class="form-group">
+                <label>اسم الصنف *</label>
+                <input type="text" id="prodName" required placeholder="مثال: شاشة 32 بوصة">
+              </div>
+
+              <div class="form-group">
+                <label>الباركود</label>
+                <input type="text" id="prodBarcode" placeholder="امسح الباركود">
+              </div>
+
+              <div class="form-group">
+                <label>التصنيف</label>
+                <input type="text" id="prodCategory" placeholder="عام">
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>سعر الشراء</label>
+                  <input type="number" step="0.01" id="prodBuyPrice" value="0">
+                </div>
+                <div class="form-group">
+                  <label>سعر البيع *</label>
+                  <input type="number" step="0.01" id="prodSellPrice" required value="0">
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>الكمية بالمخزن</label>
+                  <input type="number" id="prodStock" value="0">
+                </div>
+                <div class="form-group">
+                  <label>حد التنبيه</label>
+                  <input type="number" id="prodMinStock" value="5">
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary full-width">حفظ الصنف</button>
+            </form>
+          </div>
+
+          <!-- جدول الأصناف -->
+          <div class="table-card">
+            <div class="filter-bar">
+              <input type="text" id="invSearchInput" placeholder="بحث بالاسم أو الباركود...">
+              <select id="invCategoryFilter">
+                <option value="ALL">كل التصنيفات</option>
+              </select>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>الباركود</th>
+                  <th>اسم الصنف</th>
+                  <th>التصنيف</th>
+                  <th>شراء</th>
+                  <th>بيع</th>
+                  <th>الكمية</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody">
+                <!-- تحميل آلي -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. شاشة الخزنة والمالية (Cashbox) -->
+      <section id="cashboxView" class="view-section" style="display: none;">
+        <header class="page-header">
+          <h1>الخزنة والمالية</h1>
+          <p>متابعة حركة المقبوضات والمصروفات اليومية</p>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>إجمالي الوارد (المقبوضات)</h3>
+            <div id="cashboxTotalIn" class="stat-value text-success">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>إجمالي المنصرف (المصروفات)</h3>
+            <div id="cashboxTotalOut" class="stat-value text-danger">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>صافي رصيد الخزنة</h3>
+            <div id="cashboxNetBalance" class="stat-value">0.00 ج.م</div>
+          </div>
+        </div>
+
+        <div class="inventory-layout margin-top">
+          <!-- نموذج تسجيل حركة مالية -->
+          <div class="form-card">
+            <h3>تسجيل حركة مالية جديدة</h3>
+            <form id="cashboxForm">
+              <div class="form-group">
+                <label>نوع الحركة</label>
+                <select id="cashType">
+                  <option value="out">📤 منصرف (مصروفات)</option>
+                  <option value="in">📥 وارد (إيداع / مقبوضات)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>البند / التصنيف</label>
+                <input type="text" id="cashCategory" placeholder="مثال: كهرباء، إيجار، مشتريات...">
+              </div>
+
+              <div class="form-group">
+                <label>المبلغ *</label>
+                <input type="number" step="0.01" id="cashAmount" required placeholder="0.00">
+              </div>
+
+              <div class="form-group">
+                <label>التفاصيل / ملاحظات</label>
+                <textarea id="cashDetails" rows="3" placeholder="اكتب تفاصيل الحركة هنا..."></textarea>
+              </div>
+
+              <button type="submit" class="btn-primary full-width">تسجيل الحركة</button>
+            </form>
+          </div>
+
+          <!-- جدول الحركات المالية -->
+          <div class="table-card">
+            <div class="filter-bar">
+              <input type="text" id="cashSearchInput" placeholder="بحث التفاصيل...">
+              <select id="cashTypeFilter">
+                <option value="ALL">كل الحركات</option>
+                <option value="in">الوارد فقط</option>
+                <option value="out">المنصرف فقط</option>
+              </select>
+            </div>
+
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>التاريخ والوقت</th>
+                  <th>النوع</th>
+                  <th>البند</th>
+                  <th>التفاصيل</th>
+                  <th>المبلغ</th>
+                  <th>المسؤول</th>
+                  <th>حذف</th>
+                </tr>
+              </thead>
+              <tbody id="cashboxTableBody">
+                <!-- تحميل آلي -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. شاشة التقارير (Reports) -->
+      <section id="reportsView" class="view-section" style="display: none;">
+        <header class="page-header">
+          <h1>التقارير والأرباح</h1>
+          <p>استخراج تقارير المبيعات والأرباح حسب الفترة الزمنية</p>
+        </header>
+
+        <div class="content-block">
+          <div class="form-row align-end">
+            <div class="form-group">
+              <label>من تاريخ:</label>
+              <input type="date" id="reportStartDate">
+            </div>
+            <div class="form-group">
+              <label>إلى تاريخ:</label>
+              <input type="date" id="reportEndDate">
+            </div>
+            <div class="form-group">
+              <button id="generateReportBtn" class="btn-primary">عرض التقرير</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid margin-top">
+          <div class="stat-card">
+            <h3>إجمالي المبيعات</h3>
+            <div id="repTotalSales" class="stat-value">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>تكلفة المشتريات</h3>
+            <div id="repTotalCost" class="stat-value">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>صافي الأرباح المتوقعة</h3>
+            <div id="repTotalProfit" class="stat-value text-success">0.00 ج.م</div>
+          </div>
+          <div class="stat-card">
+            <h3>عدد الفواتير</h3>
+            <div id="repInvoicesCount" class="stat-value">0</div>
+          </div>
+        </div>
+
+        <div class="content-block margin-top">
+          <h3>سجل فواتير التقرير</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>رقم الفاتورة</th>
+                <th>التاريخ والوقت</th>
+                <th>طريقة الدفع</th>
+                <th>عدد الأصناف</th>
+                <th>الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <!-- تحميل آلي -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 6. شاشة النسخ الاحتياطي (Backup) -->
+      <section id="settingsView" class="view-section" style="display: none;">
+        <header class="page-header">
+          <h1>النسخ الاحتياطي والأمان</h1>
+          <p>تصدير واستعادة بيانات النظام وحمايتها من الضياع</p>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>تصدير نسخة احتياطية</h3>
+            <p>حفظ جميع الأصناف، الفواتير، وحركات الخزنة في ملف خارجي.</p>
+            <button id="exportBackupBtn" class="btn-primary margin-top">💾 تصدير الآن (JSON)</button>
+          </div>
+
+          <div class="stat-card">
+            <h3>استعادة نسخة احتياطية</h3>
+            <p>رفع ملف بيانات سابق لاسترجاع الأصناف والعمليات.</p>
+            <input type="file" id="importBackupInput" accept=".json" style="margin-top: 15px;">
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- القالب المخصص للطباعة الحرارية للإيصال -->
+  <div id="thermalReceiptPrint" class="printable-receipt">
+    <div class="receipt-header">
+      <h2>Omni Business</h2>
+      <p>فاتورة مبيعات</p>
+      <div id="receiptDate">التاريخ: —</div>
+      <div id="receiptNum">رقم الفاتورة: #—</div>
+    </div>
+    <hr>
+    <table class="receipt-table">
+      <thead>
+        <tr>
+          <th>الصنف</th>
+          <th>الكمية</th>
+          <th>السعر</th>
+        </tr>
+      </thead>
+      <tbody id="receiptItemsBody">
+        <!-- بيانات الإيصال -->
+      </tbody>
+    </table>
+    <hr>
+    <div class="receipt-footer">
+      <div class="total-row">
+        <span>الإجمالي النهائي:</span>
+        <strong id="receiptTotalAmount">0.00 ج.م</strong>
+      </div>
+      <p class="thank-you">شكراً لزيارتكم!</p>
+    </div>
+  </div>
+
+  <!-- تحميل ملفات JavaScript بالنظام -->
+  <script src="js/db.js"></script>
+  <script src="js/pos.js"></script>
+  <script src="js/inventory.js"></script>
+  <script src="js/cashbox.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
